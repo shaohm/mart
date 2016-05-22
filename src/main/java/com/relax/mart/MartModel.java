@@ -67,8 +67,12 @@ public class MartModel {
 	}
 
 	public void fromString(String modelStr) {
+		this.learningRate = .0;
+		this.cartModels.clear();
 		try (Scanner in = new Scanner(modelStr)) {
 			in.useDelimiter("\n\n");
+			if(! in.hasNextDouble())
+				return;
 			this.learningRate = in.nextDouble();
 			while (in.hasNext()) {
 				String cartStr = in.next();

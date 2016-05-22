@@ -29,16 +29,16 @@ public class BipartiPairwiseRankProblem implements Problem {
 	public int readableLossTopN = 2;
 
 	@Override
-	public double computeSessionLoss(DoubleVector targets, DoubleVector predicts, Session session) {
+	public double computeSessionLoss(DoubleVector predicts, Session session) {
 		// 假设targets是按照分值从高到低排序的。（在构造训练集时指定即可）
 		int numPositives = 0;
-		while (numPositives < targets.size() && targets.get(numPositives) > 0) {
+		while (numPositives < session.targets.size() && session.targets.get(numPositives) > 0) {
 			numPositives += 1;
 		}
 
 		double loss = .0;
 		for (int i = 0; i < numPositives; i++) {
-			for (int j = numPositives; j < targets.size(); j++) {
+			for (int j = numPositives; j < session.targets.size(); j++) {
 				loss += Math.log(1 + Math.exp(predicts.get(j) - predicts.get(i)));
 			}
 		}
@@ -49,20 +49,20 @@ public class BipartiPairwiseRankProblem implements Problem {
 	}
 
 	@Override
-	public void computeSessionLossGradients(DoubleVector targets, DoubleVector predicts, DoubleVector gradient, DoubleVector secondGradient, Session session) {
+	public void computeSessionLossGradients(DoubleVector predicts, DoubleVector gradient, DoubleVector secondGradient, Session session) {
 
 		gradient.clear(0);
-		gradient.append(0.0, targets.size());
+		gradient.append(0.0, session.targets.size());
 		secondGradient.clear(0);
-		secondGradient.append(0.0, targets.size());
+		secondGradient.append(0.0, session.targets.size());
 
 		int numPositives = 0;
-		while (numPositives < targets.size() && targets.get(numPositives) > 0) {
+		while (numPositives < session.targets.size() && session.targets.get(numPositives) > 0) {
 			numPositives += 1;
 		}
 
 		for (int i = 0; i < numPositives; i++) {
-			for (int j = numPositives; j < targets.size(); j++) {
+			for (int j = numPositives; j < session.targets.size(); j++) {
 				double exp = Math.exp(predicts.get(j) - predicts.get(i));
 				double ngi = gradient.get(i) - exp / (1 + exp);
 				double ngj = gradient.get(j) + exp / (1 + exp);
@@ -76,16 +76,16 @@ public class BipartiPairwiseRankProblem implements Problem {
 		}
 
 		// 由于cart本身有防止过拟合策略，且此处参数量大，半平方和损失太重，需要将规整化系数调低
-		for (int i = 0; i < targets.size(); i++) {
+		for (int i = 0; i < session.targets.size(); i++) {
 			gradient.set(gradient.get(i) + regularizationWeight * predicts.get(i), i);
 			secondGradient.set(secondGradient.get(i) + regularizationWeight, i);
 		}
 	}
 
 	@Override
-	public double computeReadableSessionLoss(DoubleVector targets, DoubleVector predicts, Session session) {
+	public double computeReadableSessionLoss(DoubleVector predicts, Session session) {
 		int numPositives = 0;
-		while (numPositives < targets.size() && targets.get(numPositives) > 0) {
+		while (numPositives < session.targets.size() && session.targets.get(numPositives) > 0) {
 			numPositives += 1;
 		}
 
@@ -183,7 +183,8 @@ public class BipartiPairwiseRankProblem implements Problem {
 	}
 
 	public static void main(String args[]) {
-		DoubleVector targets = new DoubleVector(new double[]{1, 1, 0, 0, 0, 0, 0, 0});
+		Session session = new Session(0, "");
+		session.targets = new DoubleVector(new double[]{1, 1, 0, 0, 0, 0, 0, 0});
 		DoubleVector predicts = new DoubleVector(new double[]{2, 7, 3, 4, 5, 6, 3, 8});
 //        DoubleVector predicts = new DoubleVector(new double[]{0,0,0,0,0,0,0,0});
 		DoubleVector gradient = new DoubleVector();
@@ -195,9 +196,9 @@ public class BipartiPairwiseRankProblem implements Problem {
 		BipartiPairwiseRankProblem problem = new BipartiPairwiseRankProblem();
 		problem.readableLossTopN = 6;
 		problem.regularizationWeight = 0.000001;
-		System.out.println(problem.computeSessionLoss(targets, predicts, null));
-		System.out.println(problem.computeReadableSessionLoss(targets, predicts, null));
-		problem.computeSessionLossGradients(targets, predicts, gradient, secondGradient, null);
+		System.out.println(problem.computeSessionLoss(predicts, session));
+		System.out.println(problem.computeReadableSessionLoss(predicts, session));
+		problem.computeSessionLossGradients(predicts, gradient, secondGradient, session);
 		System.out.println(gradient);
 		System.out.println(secondGradient);
 	}

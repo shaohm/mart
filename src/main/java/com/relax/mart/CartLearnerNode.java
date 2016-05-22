@@ -50,7 +50,7 @@ public class CartLearnerNode extends CartModelNode {
 		Set<Integer> featureSet = new TreeSet<Integer>();
 		double tSum = .0;
 		double tSquaredSum = .0;
-		int count = 0;
+		int countAll = 0;
 		List<Pair<Instance, Double>> examples = new ArrayList();
 
 		for (int i = 0; i < this.instances.size(); i++) {
@@ -58,7 +58,7 @@ public class CartLearnerNode extends CartModelNode {
 			double target = this.targets.get(i);
 			tSum += target;
 			tSquaredSum += target * target;
-			count += 1;
+			countAll += 1;
 			examples.add(new Pair(instance, target));
 			for (int j = 0; j < instance.getSize(); j++) {
 				int featureIndex = instance.indexAt(j);
@@ -66,16 +66,12 @@ public class CartLearnerNode extends CartModelNode {
 			}
 		}
 
-//        System.out.println("fs:" + featureSet);
-		// 找最优分割点
+		// find the best split
 		class ExampleComparator implements Comparator<Pair<Instance, Double>> {
-
 			int feature;
-
 			public ExampleComparator(int feature) {
 				this.feature = feature;
 			}
-
 			@Override
 			public int compare(Pair<Instance, Double> o1, Pair<Instance, Double> o2) {
 				double v1 = o1.first.findValue(feature);
@@ -89,27 +85,26 @@ public class CartLearnerNode extends CartModelNode {
 		double bestSplitGain = .0;
 		int bestSplitLeftCount = 0;
 		int bestSplitRightCount = 0;
-		double errorTotal = tSquaredSum - tSum * tSum / count;
+		double errorTotal = tSquaredSum - tSum * tSum / countAll;
 		for (int feature : featureSet) {
 			Collections.sort(examples, new ExampleComparator(feature));
 			double tSumLeft = .0, tSumRight = tSum;
 			double tSquaredSumLeft = .0, tSquaredSumRight = tSquaredSum;
-			int countLeft = 0, countRight = count;
+			int countLeft = 0, countRight = countAll;
 
 //            System.out.println("f:" + feature);
-			double prevValue = Double.NEGATIVE_INFINITY;
-			double psValue = Double.NEGATIVE_INFINITY, ppsValue = Double.NEGATIVE_INFINITY;
+			double prevValue = .0;
 			boolean inBestRegion = false;
-			for (int i = 0; i < count; i++) {
+			for (int i = 0; i < countAll; i++) {
 				Pair<Instance, Double> e = examples.get(i);
 				double currValue = e.first.findValue(feature);
 				if (i > 0 && prevValue != currValue) {
-					ppsValue = psValue;
-					psValue = prevValue;
 					// record  prevValue
-					double errorLeft = tSquaredSumLeft - tSumLeft * tSumLeft / countLeft;
-					double errorRight = tSquaredSumRight - tSumRight * tSumRight / countRight;
+					double errorLeft = tSquaredSumLeft - (countLeft > 0 ? tSumLeft * tSumLeft / countLeft : 0);
+					double errorRight = tSquaredSumRight - (countRight > 0 ? tSumRight * tSumRight / countRight : 0);
 					double gain = errorTotal - errorLeft - errorRight;
+//					System.out.println("g:" + prevValue + " " + currValue + " " + gain + " " + bestSplitGain);
+//					System.out.println("e:" + errorTotal + " " + errorLeft + " " + errorRight);
 					if (gain > bestSplitGain) {
 						if (countLeft >= params.minNumInstances && countRight >= params.minNumInstances) {
 							bestSplitFeature = feature;
@@ -121,11 +116,11 @@ public class CartLearnerNode extends CartModelNode {
 						}
 //                        System.out.println(bestSplitFeature);
 //                        System.out.println(bestSplitGain);
-					} else if (gain < bestSplitGain) {
-						if (inBestRegion) {
-							bestSplitEndValue = psValue;
+					} else if (gain < bestSplitGain && inBestRegion) {
+						if (countLeft >= params.minNumInstances && countRight >= params.minNumInstances) {
+							bestSplitEndValue = prevValue;
+							inBestRegion = false;
 						}
-						inBestRegion = false;
 					}
 //                    System.out.println("i:" + i + " " + currValue + " " + prevValue + " " + gain);
 //                    System.out.println("e:" + i + " " + errorTotal + " " + errorLeft + " " + errorRight);
@@ -141,13 +136,13 @@ public class CartLearnerNode extends CartModelNode {
 			}
 		}
 
-		this.numInstances = count;
+		this.numInstances = countAll;
 		this.error = errorTotal;
-		this.predict = tSum / count;
+		this.predict = tSum / countAll;
 		this.splitFeature = bestSplitFeature;
-		this.splitValue = bestSplitValue;
+//		this.splitValue = bestSplitValue;
 //        System.out.println("split start end: " + bestSplitValue + " " + bestSplitEndValue);
-//        this.splitValue = (bestSplitValue + bestSplitEndValue) / 2;
+        this.splitValue = (bestSplitValue + bestSplitEndValue) / 2;
 		this.splitGain = bestSplitGain;
 		this.splitLeftCount = bestSplitLeftCount;
 		this.splitRightCount = bestSplitRightCount;

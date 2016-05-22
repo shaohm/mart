@@ -29,10 +29,10 @@ public class BinaryClassificationProblem implements Problem {
 	double negativeExampleWeight = 1.0;
 
 	@Override
-	public double computeSessionLoss(DoubleVector targets, DoubleVector predicts, Session session) {
+	public double computeSessionLoss(DoubleVector predicts, Session session) {
 		double loss = .0;
-		for (int i = 0; i < targets.size(); i++) {
-			double t = targets.get(i);
+		for (int i = 0; i < session.targets.size(); i++) {
+			double t = session.targets.get(i);
 			double p = predicts.get(i);
 			double w = (t > 0) ? positiveExampleWeight : negativeExampleWeight;
 			loss += w * Math.log(1 + Math.exp(-p * t));
@@ -42,14 +42,14 @@ public class BinaryClassificationProblem implements Problem {
 	}
 
 	@Override
-	public void computeSessionLossGradients(DoubleVector targets, DoubleVector predicts, DoubleVector gradient, DoubleVector secondGradient, Session session) {
+	public void computeSessionLossGradients(DoubleVector predicts, DoubleVector gradient, DoubleVector secondGradient, Session session) {
 		gradient.clear(0);
-		gradient.append(0.0, targets.size());
+		gradient.append(0.0, session.targets.size());
 		secondGradient.clear(0);
-		secondGradient.append(0.0, targets.size());
+		secondGradient.append(0.0, session.targets.size());
 
-		for (int i = 0; i < targets.size(); i++) {
-			double t = targets.get(i);
+		for (int i = 0; i < session.targets.size(); i++) {
+			double t = session.targets.get(i);
 			double p = predicts.get(i);
 			double w = (t > 0) ? positiveExampleWeight : negativeExampleWeight;
 			double exp = Math.exp(-t * p);
@@ -62,10 +62,10 @@ public class BinaryClassificationProblem implements Problem {
 	 * 简单计算精度吧。
 	 */
 	@Override
-	public double computeReadableSessionLoss(DoubleVector targets, DoubleVector predicts, Session session) {
+	public double computeReadableSessionLoss(DoubleVector predicts, Session session) {
 		double loss = .0;
-		for (int i = 0; i < targets.size(); i++) {
-			double t = targets.get(i);
+		for (int i = 0; i < session.targets.size(); i++) {
+			double t = session.targets.get(i);
 			double p = predicts.get(i);
 			if (p == 0) {
 				loss += 0.5;
@@ -74,7 +74,7 @@ public class BinaryClassificationProblem implements Problem {
 				loss += 1;
 			}
 		}
-		loss /= targets.size();
+		loss /= session.targets.size();
 		return loss;
 	}
 

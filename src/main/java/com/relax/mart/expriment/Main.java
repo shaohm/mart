@@ -19,7 +19,7 @@ import com.relax.mart.Dataset;
 import com.relax.mart.BipartiPairwiseRankProblem;
 import com.relax.mart.MartLearnerParams;
 import com.relax.mart.MartModel;
-import com.relax.mart.MartNewtonRaphsonLearner;
+import com.relax.mart.MartNewtonRaphsonStepLearner;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -47,7 +47,7 @@ public class Main {
 		params.cartParams.maxNumLeaves = 6;
 		params.cartParams.minNumInstances = 4;
 
-		MartNewtonRaphsonLearner learner = new MartNewtonRaphsonLearner();
+		MartNewtonRaphsonStepLearner learner = new MartNewtonRaphsonStepLearner();
 		learner.setParams(params);
 		BipartiPairwiseRankProblem problem = new BipartiPairwiseRankProblem();
 		problem.readableLossTopN = 1;

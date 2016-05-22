@@ -46,6 +46,7 @@ public class CartLearner {
 				System.out.println("E: " + node.seq + " " + params.maxDepth);
 				System.out.println("F: " + node.splitLeftCount + " " + params.minNumInstances);
 				System.out.println("G: " + node.splitRightCount + " " + params.minNumInstances);
+				System.out.println(node);
 				continue;
 			}
 			if (node.error > params.minRatioSplitGain && node.splitGain > root.error * params.minRatioSplitGain) {

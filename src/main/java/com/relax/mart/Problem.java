@@ -27,15 +27,15 @@ public interface Problem {
 	/**
 	 * compute total loss for all predict
 	 */
-	double computeSessionLoss(DoubleVector targets, DoubleVector predicts, Session session);
+	double computeSessionLoss(DoubleVector predicts, Session session);
 
 	/**
 	 * the gradient of loss as a function of all predicts
 	 */
-	void computeSessionLossGradients(DoubleVector targets, DoubleVector predicts, DoubleVector gradient, DoubleVector secondGradient, Session session);
+	void computeSessionLossGradients(DoubleVector predicts, DoubleVector gradient, DoubleVector secondGradient, Session session);
 
 	/**
 	 * compute total loss for all predict
 	 */
-	double computeReadableSessionLoss(DoubleVector targets, DoubleVector predicts, Session session);
+	double computeReadableSessionLoss(DoubleVector predicts, Session session);
 }

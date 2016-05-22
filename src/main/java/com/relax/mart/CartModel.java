@@ -42,22 +42,26 @@ public class CartModel {
 		this.collectLeaves();
 	}
 
-	public void simplify() {
-		root = new CartModelNode(root);
+	public CartModel simplified() {
+		CartModel cart = new CartModel();
+		cart.root = new CartModelNode(this.root);
 		Queue<CartModelNode> q = new LinkedList();
-		q.add(root);
+		q.add(cart.root);
 		while (!q.isEmpty()) {
 			CartModelNode node = q.poll();
 			if (node.left != null) {
 				node.left = new CartModelNode(node.left);
 				node.left.parent = node;
+				q.add(node.left);
+			}
+			if(node.right != null) {
 				node.right = new CartModelNode(node.right);
 				node.right.parent = node;
-				q.add(node.left);
 				q.add(node.right);
 			}
 		}
-		this.collectLeaves();
+		cart.collectLeaves();
+		return cart;
 	}
 
 	public List<Rule> toRuleSet() {
@@ -145,7 +149,7 @@ public class CartModel {
 			}
 			this.root = nodeMap.get(1);
 		}
-		this.collectLeaves();;
+		this.collectLeaves();
 	}
 
 	public void print(PrintWriter writer) {
