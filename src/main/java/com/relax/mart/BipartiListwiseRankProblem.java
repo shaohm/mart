@@ -142,11 +142,11 @@ public class BipartiListwiseRankProblem implements Problem {
 				double ngi = gradient.get(i) - exp / (1 + exp) * deltaZ;
 				double ngj = gradient.get(j) + exp / (1 + exp) * deltaZ;
 				
-				//debug
-				if(Double.isNaN(ngi) || Double.isNaN(ngj)) {
-					System.out.println("d:" + predicts.get(i) + " " + predicts.get(j) + " " + ngi + " " + ngj);
-					System.out.println("n:" + deltaZ + " " + exp + " " + ngi + " " + ngj);
-				}
+//				//debug
+//				if(Double.isNaN(ngi) || Double.isNaN(ngj)) {
+//					System.out.println("d:" + predicts.get(i) + " " + predicts.get(j) + " " + ngi + " " + ngj);
+//					System.out.println("n:" + deltaZ + " " + exp + " " + ngi + " " + ngj);
+//				}
 				gradient.set(ngi, i);
 				gradient.set(ngj, j);
 				double nsgi = secondGradient.get(i) + exp / (1 + exp) / (1 + exp) * deltaZ;
@@ -156,13 +156,13 @@ public class BipartiListwiseRankProblem implements Problem {
 			}
 		}
 		
-		// debug
-		for(int i = 0; i < session.targets.size(); i++) {
-			if(Double.isNaN(gradient.get(i))) {
-				System.out.println("m:" + multipliers);
-				System.out.println("p:" + predicts);
-			}
-		}
+//		// debug
+//		for(int i = 0; i < session.targets.size(); i++) {
+//			if(Double.isNaN(gradient.get(i))) {
+//				System.out.println("m:" + multipliers);
+//				System.out.println("p:" + predicts);
+//			}
+//		}
 
 		// 由于cart本身有防止过拟合策略，且此处参数量大，半平方和损失太重，需要将规整化系数调低
 		for (int i = 0; i < session.targets.size(); i++) {
@@ -200,11 +200,11 @@ public class BipartiListwiseRankProblem implements Problem {
 			}
 			counts.append(numLocalPositives);
 			counts.append(numLocalNegatives);
-			// debug
-			if(from == to) {
-				System.out.println("f:" + from + " " + predictsBak.size());
-				System.out.println("p:" + predictsBak);
-			}
+//			// debug
+//			if(from == to) {
+//				System.out.println("f:" + from + " " + predictsBak.size());
+//				System.out.println("p:" + predictsBak);
+//			}
 			from = to;
 		}
 

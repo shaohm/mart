@@ -37,7 +37,12 @@ public class RuleSetModel {
 	public List<Rule> rules = new ArrayList();
 
 	public double predict(Instance instance) {
-		return .0;
+		double score = .0;
+		for(Rule rule : rules) {
+			if(rule.path.accept(instance))
+				score += rule.predict;
+		}
+		return score;
 	}
 
 	@Override
@@ -52,9 +57,10 @@ public class RuleSetModel {
 
 	public void fromString(String modelStr) {
 		try (Scanner in = new Scanner(modelStr)) {
-			this.learningRate = in.nextDouble();
+			if(in.hasNextLine())
+				this.learningRate = Double.parseDouble(in.nextLine());
 			while (in.hasNextLine()) {
-				String ruleStr = in.next();
+				String ruleStr = in.nextLine();
 				Rule rule = new Rule();
 				rule.fromString(ruleStr);
 				this.rules.add(rule);
@@ -62,8 +68,8 @@ public class RuleSetModel {
 		}
 	}
 
-	public void dump(File ruleSetFile) throws IOException {
-		try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(ruleSetFile), "utf-8"))) {
+	public void dump(File rulesFile) throws IOException {
+		try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(rulesFile), "utf-8"))) {
 			writer.write(String.format("%g\n", this.learningRate));
 			for (Rule rule : rules) {
 				String ruleStr = rule.toString();
@@ -73,9 +79,9 @@ public class RuleSetModel {
 		}
 	}
 
-	public void load(File modelFile) throws IOException {
+	public void load(File rulesFile) throws IOException {
 		StringBuilder buf = new StringBuilder();
-		try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(modelFile), "utf-8"))) {
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(rulesFile), "utf-8"))) {
 			while (true) {
 				int c = reader.read();
 				if (c > 0) {

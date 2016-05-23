@@ -95,13 +95,13 @@ public class MartNewtonRaphsonStepLearner {
 				CartLearnerNode learnerNode = (CartLearnerNode) modelNode;
 				Map<Integer, IntVector> sessionMap = new TreeMap();
 				
-				// debug
-				if(learnerNode.instances.isEmpty()) {
-					System.out.println("l:" + learnerNode.toString());
-					System.out.println("l:" + learnerNode.parent.toString());
-					System.out.println("l:" + learnerNode.parent.left.toString());
-					System.out.println("l:" + learnerNode.parent.right.toString());
-				}
+//				// debug
+//				if(learnerNode.instances.isEmpty()) {
+//					System.out.println("l:" + learnerNode.toString());
+//					System.out.println("l:" + learnerNode.parent.toString());
+//					System.out.println("l:" + learnerNode.parent.left.toString());
+//					System.out.println("l:" + learnerNode.parent.right.toString());
+//				}
 				for (Instance instance : learnerNode.instances) {
 					if (sessionMap.containsKey(instance.sesstion.offset)) {
 						sessionMap.get(instance.sesstion.offset).append(instance.offset);

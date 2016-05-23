@@ -33,10 +33,10 @@ public class Rule {
 	}
 
 	public void fromString(String ruleStr) {
-		int i = ruleStr.indexOf(' ');
-		predict = Double.parseDouble(ruleStr.substring(0, i).trim());
+		String slices[] = ruleStr.split("\\s+", 2);
+		predict = Double.parseDouble(slices[0].trim());
 		path = new Path();
-		path.fromString(ruleStr.substring(i + 1).trim());
+		path.fromString(slices[1].trim());
 	}
 
 	public static interface Condition {
@@ -102,7 +102,7 @@ public class Rule {
 
 		private void fromString(String pathStr) {
 			nodes.clear();
-			String[] slices = pathStr.trim().split("\\s*&\\s*");
+			String[] slices = pathStr.trim().split("&");
 			for (String nodeStr : slices) {
 				Node node = new Node();
 				node.fromString(nodeStr.trim());
