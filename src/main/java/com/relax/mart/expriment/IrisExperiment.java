@@ -82,11 +82,11 @@ public class IrisExperiment {
 		params.learningRate = 1;
 		params.cartParams.maxDepth = 2;
 		params.cartParams.maxNumLeaves = 6;
-		params.cartParams.minNumInstances = 4;
+		params.cartParams.minNumExamplesAtLeaf = 4;
 		MartNewtonRaphsonStepLearner learner = new MartNewtonRaphsonStepLearner();
 		learner.setParams(params);
 		learner.setModelFile(modelFile);
-		MartModel model = learner.learn(trainDataset, testDataset, new BinaryClassificationProblem());
+		MartModel model = learner.learn(trainDataset, testDataset, new BinomialClassificationProblem());
 		model.toRuleSetModel().dump(rulesFile);
 
 		// test

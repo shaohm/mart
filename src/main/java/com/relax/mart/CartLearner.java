@@ -41,12 +41,12 @@ public class CartLearner {
 		while (!leavesToSplit.isEmpty()) {
 			CartLearnerNode node = leavesToSplit.poll();
 			if (Math.log(node.seq) / Math.log(2) >= params.maxDepth
-					|| node.splitLeftCount < params.minNumInstances
-					|| node.splitRightCount < params.minNumInstances) {
-				System.out.println("E: " + node.seq + " " + params.maxDepth);
-				System.out.println("F: " + node.splitLeftCount + " " + params.minNumInstances);
-				System.out.println("G: " + node.splitRightCount + " " + params.minNumInstances);
-				System.out.println(node);
+					|| node.splitLeftCount < params.minNumExamplesAtLeaf
+					|| node.splitRightCount < params.minNumExamplesAtLeaf) {
+//				System.out.println("E: " + node.seq + " " + params.maxDepth);
+//				System.out.println("F: " + node.splitLeftCount + " " + params.minNumLeafExamples);
+//				System.out.println("G: " + node.splitRightCount + " " + params.minNumLeafExamples);
+//				System.out.println(node);
 				continue;
 			}
 			if (node.error > params.minRatioSplitGain && node.splitGain > root.error * params.minRatioSplitGain) {
@@ -54,13 +54,13 @@ public class CartLearner {
 				leavesToSplit.add((CartLearnerNode) node.left);
 				leavesToSplit.add((CartLearnerNode) node.right);
 				numLeaves += 1;
-				System.out.println("H: " + node.seq + " " + params.maxDepth);
+//				System.out.println("H: " + node.seq + " " + params.maxDepth);
 				if (numLeaves >= params.maxNumLeaves) {
-					System.out.println("I: " + node.seq + " " + params.maxDepth);
+//					System.out.println("I: " + node.seq + " " + params.maxDepth);
 					leavesToSplit.clear();
 				}
 			} else {
-				System.out.println("J:" + node.error + " " + node.splitGain + " " + params.minRatioSplitGain);
+//				System.out.println("J:" + node.error + " " + node.splitGain + " " + params.minRatioSplitGain);
 			}
 		}
 		return root;

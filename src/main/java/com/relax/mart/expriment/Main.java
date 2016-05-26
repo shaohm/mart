@@ -16,7 +16,7 @@
 package com.relax.mart.expriment;
 
 import com.relax.mart.Dataset;
-import com.relax.mart.BipartiPairwiseRankProblem;
+import com.relax.mart.BipartitePairwiseRankProblem;
 import com.relax.mart.MartLearnerParams;
 import com.relax.mart.MartModel;
 import com.relax.mart.MartNewtonRaphsonStepLearner;
@@ -45,11 +45,11 @@ public class Main {
 //        params.cartParams = new CartLearnerParams();
 		params.cartParams.maxDepth = 1;
 		params.cartParams.maxNumLeaves = 6;
-		params.cartParams.minNumInstances = 4;
+		params.cartParams.minNumExamplesAtLeaf = 4;
 
 		MartNewtonRaphsonStepLearner learner = new MartNewtonRaphsonStepLearner();
 		learner.setParams(params);
-		BipartiPairwiseRankProblem problem = new BipartiPairwiseRankProblem();
+		BipartitePairwiseRankProblem problem = new BipartitePairwiseRankProblem();
 		problem.readableLossTopN = 1;
 		MartModel model = learner.learn(ds, null, problem);
 		model.dump(toFile);

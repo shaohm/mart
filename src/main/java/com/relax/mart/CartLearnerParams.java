@@ -21,8 +21,32 @@ package com.relax.mart;
  */
 public class CartLearnerParams {
 
+	/**
+	 * 回归树叶子节点的数量上限。
+	 */
 	public int maxNumLeaves = 6;
+
+	/**
+	 * 回归树的最大深度。只有根节点的树深度为0.
+	 */
 	public int maxDepth = 3;
-	public int minNumInstances = 6;
-	public double minRatioSplitGain = 0.001;
+
+	/**
+	 * 每个叶子节点的样例数的最低值。
+	 */
+	public int minNumExamplesAtLeaf = 6;
+
+	/**
+	 * 分割的收益占当前误差的最低比例。低于此值，取消分割。
+	 */
+	public double minRatioSplitGain = 0.000001;
+	
+	/**
+	 * 用于加速训练。 
+	 * 分割时，如果样本量大于两倍的suitableNumExamplesForSplit，
+	 * 就会随机选取suitableNumExamplesForSplit个样本来计算最佳分割点。
+	 * 默认，使用全部样本。
+	 */
+	public int suitableNumExamplesForSplit = Integer.MAX_VALUE;
+
 }

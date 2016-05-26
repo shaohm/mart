@@ -46,6 +46,26 @@ public class CartLearnerNode extends CartModelNode {
 		this.targets = targets;
 		this.seq = seq;
 
+		// 采样
+		List<Instance> sampledInstances; 
+		DoubleVector sampledTargets;
+		if(this.instances.size() < params.suitableNumExamplesForSplit * 2)  {
+			sampledInstances = this.instances;
+			sampledTargets = this.targets;
+		} else {
+			TreeSet<Integer> sampledIndices = new TreeSet<Integer>();
+			while(sampledIndices.size() < params.suitableNumExamplesForSplit) {
+				int index = (int) (Math.random() * instances.size());
+				sampledIndices.add(index);
+			}
+			sampledInstances = new ArrayList<>(params.suitableNumExamplesForSplit);
+			sampledTargets = new DoubleVector(params.suitableNumExamplesForSplit);
+			for(int index : sampledIndices) {
+				sampledInstances.add(this.instances.get(index));
+				sampledTargets.append(this.targets.get(index));
+			}
+		}		
+		
 		// 收集所有的特征
 		Set<Integer> featureSet = new TreeSet<Integer>();
 		double tSum = .0;
@@ -53,9 +73,9 @@ public class CartLearnerNode extends CartModelNode {
 		int countAll = 0;
 		List<Pair<Instance, Double>> examples = new ArrayList();
 
-		for (int i = 0; i < this.instances.size(); i++) {
-			Instance instance = this.instances.get(i);
-			double target = this.targets.get(i);
+		for (int i = 0; i < sampledInstances.size(); i++) {
+			Instance instance = sampledInstances.get(i);
+			double target = sampledTargets.get(i);
 			tSum += target;
 			tSquaredSum += target * target;
 			countAll += 1;
@@ -92,21 +112,17 @@ public class CartLearnerNode extends CartModelNode {
 			double tSquaredSumLeft = .0, tSquaredSumRight = tSquaredSum;
 			int countLeft = 0, countRight = countAll;
 
-//            System.out.println("f:" + feature);
 			double prevValue = .0;
 			boolean inBestRegion = false;
 			for (int i = 0; i < countAll; i++) {
 				Pair<Instance, Double> e = examples.get(i);
 				double currValue = e.first.findValue(feature);
 				if (i > 0 && prevValue != currValue) {
-					// record  prevValue
 					double errorLeft = tSquaredSumLeft - (countLeft > 0 ? tSumLeft * tSumLeft / countLeft : 0);
 					double errorRight = tSquaredSumRight - (countRight > 0 ? tSumRight * tSumRight / countRight : 0);
 					double gain = errorTotal - errorLeft - errorRight;
-//					System.out.println("g:" + prevValue + " " + currValue + " " + gain + " " + bestSplitGain);
-//					System.out.println("e:" + errorTotal + " " + errorLeft + " " + errorRight);
 					if (gain > bestSplitGain) {
-						if (countLeft >= params.minNumInstances && countRight >= params.minNumInstances) {
+						if (countLeft >= params.minNumExamplesAtLeaf && countRight >= params.minNumExamplesAtLeaf) {
 							bestSplitFeature = feature;
 							bestSplitValue = bestSplitEndValue = prevValue;
 							bestSplitGain = gain;
@@ -114,17 +130,12 @@ public class CartLearnerNode extends CartModelNode {
 							bestSplitRightCount = countRight;
 							inBestRegion = true;
 						}
-//                        System.out.println(bestSplitFeature);
-//                        System.out.println(bestSplitGain);
 					} else if (gain < bestSplitGain && inBestRegion) {
-						if (countLeft >= params.minNumInstances && countRight >= params.minNumInstances) {
+						if (countLeft >= params.minNumExamplesAtLeaf && countRight >= params.minNumExamplesAtLeaf) {
 							bestSplitEndValue = prevValue;
 							inBestRegion = false;
 						}
 					}
-//                    System.out.println("i:" + i + " " + currValue + " " + prevValue + " " + gain);
-//                    System.out.println("e:" + i + " " + errorTotal + " " + errorLeft + " " + errorRight);
-
 				}
 				tSumLeft += e.second;
 				tSumRight -= e.second;
@@ -136,7 +147,7 @@ public class CartLearnerNode extends CartModelNode {
 			}
 		}
 
-		this.numInstances = countAll;
+		this.numInstances = this.instances.size();
 		this.error = errorTotal;
 		this.predict = tSum / countAll;
 		this.splitFeature = bestSplitFeature;

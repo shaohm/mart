@@ -20,8 +20,16 @@ package com.relax.mart;
  * @author haimin.shao
  */
 public class MartLearnerParams {
-
+	/** 
+	 * 用于下层回归树训练的参数。
+	 */
 	public CartLearnerParams cartParams = new CartLearnerParams();
+	/**
+	 * 回归树的个数上限。
+	 */
 	public int numCarts = 100;
+	/**
+	 * 学习率。据传较低的learningRate会有较好的效果。
+	 */
 	public double learningRate = 0.3;
 }
