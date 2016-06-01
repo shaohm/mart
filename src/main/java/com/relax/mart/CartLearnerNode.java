@@ -47,25 +47,25 @@ public class CartLearnerNode extends CartModelNode {
 		this.seq = seq;
 
 		// 采样
-		List<Instance> sampledInstances; 
+		List<Instance> sampledInstances;
 		DoubleVector sampledTargets;
-		if(this.instances.size() < params.suitableNumExamplesForSplit * 2)  {
+		if (this.instances.size() * 0.5 < params.suitableNumExamplesForSplit) {
 			sampledInstances = this.instances;
 			sampledTargets = this.targets;
 		} else {
 			TreeSet<Integer> sampledIndices = new TreeSet<Integer>();
-			while(sampledIndices.size() < params.suitableNumExamplesForSplit) {
+			while (sampledIndices.size() < params.suitableNumExamplesForSplit) {
 				int index = (int) (Math.random() * instances.size());
 				sampledIndices.add(index);
 			}
 			sampledInstances = new ArrayList<>(params.suitableNumExamplesForSplit);
 			sampledTargets = new DoubleVector(params.suitableNumExamplesForSplit);
-			for(int index : sampledIndices) {
+			for (int index : sampledIndices) {
 				sampledInstances.add(this.instances.get(index));
 				sampledTargets.append(this.targets.get(index));
 			}
-		}		
-		
+		}
+
 		// 收集所有的特征
 		Set<Integer> featureSet = new TreeSet<Integer>();
 		double tSum = .0;
@@ -88,10 +88,13 @@ public class CartLearnerNode extends CartModelNode {
 
 		// find the best split
 		class ExampleComparator implements Comparator<Pair<Instance, Double>> {
+
 			int feature;
+
 			public ExampleComparator(int feature) {
 				this.feature = feature;
 			}
+
 			@Override
 			public int compare(Pair<Instance, Double> o1, Pair<Instance, Double> o2) {
 				double v1 = o1.first.findValue(feature);
@@ -153,7 +156,7 @@ public class CartLearnerNode extends CartModelNode {
 		this.splitFeature = bestSplitFeature;
 //		this.splitValue = bestSplitValue;
 //        System.out.println("split start end: " + bestSplitValue + " " + bestSplitEndValue);
-        this.splitValue = (bestSplitValue + bestSplitEndValue) / 2;
+		this.splitValue = (bestSplitValue + bestSplitEndValue) / 2;
 		this.splitGain = bestSplitGain;
 		this.splitLeftCount = bestSplitLeftCount;
 		this.splitRightCount = bestSplitRightCount;
