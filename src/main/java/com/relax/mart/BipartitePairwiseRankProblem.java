@@ -143,7 +143,7 @@ public class BipartitePairwiseRankProblem implements Problem {
 				}
 				return 1.0;
 			}
-			numPassed -= np + nn;
+			numPassed += np + nn;
 		}
 		return .0;
 	}

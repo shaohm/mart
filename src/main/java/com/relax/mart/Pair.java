@@ -21,11 +21,15 @@ package com.relax.mart;
  */
 public class Pair<K, V> {
 
-	K first;
-	V second;
+	public K first;
+	public V second;
 
 	public Pair(K first, V second) {
 		this.first = first;
 		this.second = second;
+	}
+	
+	public String toString() {
+		return first.toString() + ":" + second.toString();
 	}
 }

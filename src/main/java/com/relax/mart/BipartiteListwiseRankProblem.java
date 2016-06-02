@@ -185,6 +185,7 @@ public class BipartiteListwiseRankProblem implements Problem {
 		}
 		sortDesc(predictsBak, 0, predictsBak.size(), indices);
 //        System.out.println(predictsBak);
+//		System.out.println(indices);
 
 		IntVector counts = new IntVector();
 		int from = 0, to = 0;
@@ -217,13 +218,16 @@ public class BipartiteListwiseRankProblem implements Problem {
 			int nn = counts.get(i + 1);
 			if (this.readableLossTopN - numPassed > np + nn) {
 				if (np > 0) {
+//					System.out.println("A:" + numPassed + " " + np + " " + nn);
 					return 0.0;
 				}
 			} else if (this.readableLossTopN - numPassed < np + nn) {
 				if (np == 0) {
+//					System.out.println("B:" + numPassed + " " + np + " " + nn);
 					return 1.0;
 				}
 				if (nn < this.readableLossTopN - numPassed) {
+//					System.out.println("C:" + numPassed + " " + np + " " + nn);
 					return 0.0;
 				}
 
@@ -231,6 +235,7 @@ public class BipartiteListwiseRankProblem implements Problem {
 				for (int j = 0; j < this.readableLossTopN - numPassed; j++) {
 					loss *= ((nn - j) / (double) (np + nn - j));
 				}
+//				System.out.println("D:" + numPassed + " " + np + " " + nn);
 				return loss;
 			} else {
 				if (np > 0) {
@@ -238,7 +243,7 @@ public class BipartiteListwiseRankProblem implements Problem {
 				}
 				return 1.0;
 			}
-			numPassed -= np + nn;
+			numPassed += np + nn;
 		}
 		return .0;
 	}
@@ -280,22 +285,22 @@ public class BipartiteListwiseRankProblem implements Problem {
 
 	public static void main(String args[]) {
 		Session session = new Session(0, "");
-		session.targets = new DoubleVector(new double[]{1, 1, 0, 0, 0, 0, 0, 0});
-		DoubleVector predicts = new DoubleVector(new double[]{2, 7, 3, 4, 5, 6, 3, 8});
+		session.targets = new DoubleVector(new double[]{1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0});
+		DoubleVector predicts = new DoubleVector(new double[]{4.0, 4.0, 4.0, 8.0, 20.0, 20.0, 8.0, 8.0, 2.0, 2.0, 4.0, 7.0, 8.0});
 //        DoubleVector predicts = new DoubleVector(new double[]{0,0,0,0,0,0,0,0});
-		DoubleVector gradient = new DoubleVector();
-		DoubleVector secondGradient = new DoubleVector();
+//		DoubleVector gradient = new DoubleVector();
+//		DoubleVector secondGradient = new DoubleVector();
 
 		IntVector indices = new IntVector();
 		indices.append(0);
 		indices.append(1);
 		BipartiteListwiseRankProblem problem = new BipartiteListwiseRankProblem();
-		problem.readableLossTopN = 6;
+		problem.readableLossTopN = 2;
 		problem.regularizationWeight = 0.000001;
-		System.out.println(problem.computeSessionLoss(predicts, session));
+//		System.out.println(problem.computeSessionLoss(predicts, session));
 		System.out.println(problem.computeReadableSessionLoss(predicts, session));
-		problem.computeSessionLossGradients(predicts, gradient, secondGradient, session);
-		System.out.println(gradient);
-		System.out.println(secondGradient);
+//		problem.computeSessionLossGradients(predicts, gradient, secondGradient, session);
+//		System.out.println(gradient);
+//		System.out.println(secondGradient);
 	}
 }
