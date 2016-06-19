@@ -44,31 +44,54 @@ public class Session {
 	}
 
 	public void orderByTargetDesc() {
-		qsort(this.targets, 0, this.targets.size(), this.instances);
+		qsort(this.targets, 0, this.targets.size(), this.instances, 0);
 		for (int i = 0; i < this.instances.size(); i++) {
 			this.instances.get(i).offset = i;
 		}
 	}
 
 	public static void main(String args[]) {
-		double value[] = {5, 3, 1, 1, 7, 8, 4, 9};
+		double value[] = {0, 0, 0, 1, 1, 1, 1, 1};
 		DoubleVector targets = new DoubleVector(value);
 		List<String> instances = Arrays.asList("e", "c", "a", "b", "f", "g", "d", "h");
 		int from = 0, to = value.length;
-		qsort(targets, from, to, instances);
+		qsort(targets, from, to, instances, 0);
 		System.out.println(targets);
 		System.out.println(instances);
 	}
 
-	private static <T> void qsort(DoubleVector targets, int from, int to, List<T> instances) {
+	private static <T> void qsort(DoubleVector targets, int from, int to, List<T> instances, int level) {
 		if (from >= to) {
 			return;
 		}
+		// 检查是否已经有序，避免stack overflow的情况
+		boolean inOrder = true;
+		for(int i = from; i < to - 1; i++) {
+			if(targets.get(i) < targets.get(i + 1)) {
+				inOrder = false;
+				break;
+			}
+		}
+		if(inOrder) {
+			return;
+		}
+		
+		// 选取支点
 		double pivot = targets.get(from);
 		T pivotInstance = instances.get(from);
+		
+		// 检查支点性质，平衡区域划分，减少stack overflow的可能性（在二值标签情况下极易发生的情况）
+		int numSmallers = 0, numBiggers = 0;
+		for(int i = from; i < to; i++) {
+			if(targets.get(i) > pivot)
+				numBiggers ++;
+			else
+				numSmallers ++;
+ 		}
+		
 		int i = from, j = to - 1;
 		while (true) {
-			while (i < j && targets.get(j) <= pivot) {
+			while (i < j && (targets.get(j) < pivot  || targets.get(j) == pivot && numBiggers > numSmallers )) {
 				j--;
 			}
 			if (i == j) {
@@ -78,7 +101,7 @@ public class Session {
 			instances.set(i, instances.get(j));
 			i++;
 
-			while (i < j && targets.get(i) >= pivot) {
+			while (i < j && (targets.get(i) > pivot || targets.get(i) == pivot && numBiggers <= numSmallers)) {
 				i++;
 			}
 			if (i == j) {
@@ -90,7 +113,7 @@ public class Session {
 		}
 		targets.set(pivot, i);
 		instances.set(i, pivotInstance);
-		qsort(targets, from, i, instances);
-		qsort(targets, i + 1, to, instances);
+		qsort(targets, from, i, instances, level + 1);
+		qsort(targets, i + 1, to, instances, level + 1);
 	}
 }
