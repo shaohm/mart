@@ -95,7 +95,6 @@ public class BipartitePairwiseRankProblem implements Problem {
 		for (int i = 0; i < predictsBak.size(); i++) {
 			indices.append(i);
 		}
-		// sortDesc(predictsBak, 0, predictsBak.size(), indices);
 		Sorter.sort(predictsBak.backingArray(), 0, predicts.size(), indices.backingArray(), false);
 		IntVector counts = new IntVector();
 		int from = 0, to = 0;
@@ -147,40 +146,6 @@ public class BipartitePairwiseRankProblem implements Problem {
 			numPassed += np + nn;
 		}
 		return .0;
-	}
-
-	private static <T> void sortDesc(DoubleVector predicts, int from, int to, IntVector indices) {
-		if (from >= to) {
-			return;
-		}
-		double pivot = predicts.get(from);
-		int pivotIndex = indices.get(from);
-		int i = from, j = to - 1;
-		while (true) {
-			while (i < j && predicts.get(j) <= pivot) {
-				j--;
-			}
-			if (i == j) {
-				break;
-			}
-			predicts.set(predicts.get(j), i);
-			indices.set(indices.get(j), i);
-			i++;
-
-			while (i < j && predicts.get(i) >= pivot) {
-				i++;
-			}
-			if (i == j) {
-				break;
-			}
-			predicts.set(predicts.get(i), j);
-			indices.set(indices.get(i), j);
-			j--;
-		}
-		predicts.set(pivot, i);
-		indices.set(pivotIndex, i);
-		sortDesc(predicts, from, i, indices);
-		sortDesc(predicts, i + 1, to, indices);
 	}
 
 	public static void main(String args[]) {
