@@ -17,6 +17,7 @@ package com.relax.mart;
 
 import com.relax.lib.pcj.DoubleVector;
 import com.relax.lib.pcj.IntVector;
+import com.relax.lib.pcj.Sorter;
 
 /**
  * 使用类似mean reciprocal rank的measure。
@@ -45,8 +46,9 @@ public class BipartiteListwiseRankProblem implements Problem {
 		for (int i = 0; i < predictsBak.size(); i++) {
 			indices.append(i);
 		}
-		sortDesc(predictsBak, 0, predictsBak.size(), indices);
-
+//		sortDesc(predictsBak, 0, predictsBak.size(), indices);
+		Sorter.sort(predictsBak.backingArray(), 0, predictsBak.size(), indices.backingArray(), false);
+		
 		DoubleVector multipliers = new DoubleVector(.0, indices.size());
 		IntVector froms = new IntVector(session.targets.size());
 		IntVector tos = new IntVector(session.targets.size());
@@ -104,7 +106,8 @@ public class BipartiteListwiseRankProblem implements Problem {
 		for (int i = 0; i < predictsBak.size(); i++) {
 			indices.append(i);
 		}
-		sortDesc(predictsBak, 0, predictsBak.size(), indices);
+//		sortDesc(predictsBak, 0, predictsBak.size(), indices);
+		Sorter.sort(predictsBak.backingArray(), 0, predictsBak.size(), indices.backingArray(), false);
 
 		DoubleVector multipliers = new DoubleVector(.0, indices.size());
 		IntVector froms = new IntVector(session.targets.size());
@@ -183,7 +186,9 @@ public class BipartiteListwiseRankProblem implements Problem {
 		for (int i = 0; i < predictsBak.size(); i++) {
 			indices.append(i);
 		}
-		sortDesc(predictsBak, 0, predictsBak.size(), indices);
+//		sortDesc(predictsBak, 0, predictsBak.size(), indices);
+		Sorter.sort(predictsBak.backingArray(), 0, predictsBak.size(), indices.backingArray(), false);
+
 //        System.out.println(predictsBak);
 //		System.out.println(indices);
 
@@ -246,41 +251,6 @@ public class BipartiteListwiseRankProblem implements Problem {
 			numPassed += np + nn;
 		}
 		return .0;
-	}
-
-	private static <T> void sortDesc(DoubleVector predicts, int from, int to, IntVector indices) {
-		if (from >= to) {
-			return;
-		}
-		double pivot = predicts.get(from);
-		int pivotIndex = indices.get(from);
-		int i = from, j = to - 1;
-		while (true) {
-			// 保证同等预测值下，编号小的排在后面
-			while (i < j && (predicts.get(j) < pivot || predicts.get(j) == pivot && indices.get(j) < pivotIndex)) {
-				j--;
-			}
-			if (i == j) {
-				break;
-			}
-			predicts.set(predicts.get(j), i);
-			indices.set(indices.get(j), i);
-			i++;
-
-			while (i < j && (predicts.get(i) > pivot || predicts.get(i) == pivot && indices.get(i) > pivotIndex)) {
-				i++;
-			}
-			if (i == j) {
-				break;
-			}
-			predicts.set(predicts.get(i), j);
-			indices.set(indices.get(i), j);
-			j--;
-		}
-		predicts.set(pivot, i);
-		indices.set(pivotIndex, i);
-		sortDesc(predicts, from, i, indices);
-		sortDesc(predicts, i + 1, to, indices);
 	}
 
 	public static void main(String args[]) {

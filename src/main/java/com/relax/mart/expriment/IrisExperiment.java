@@ -31,7 +31,7 @@ public class IrisExperiment {
 
 	static String workDir = "D:/NetBeansProjects/mart/src/main/resources";
 
-	public static void readyData() throws FileNotFoundException, UnsupportedEncodingException {
+	public static void readyData() throws Exception {
 		File originFile = new File(workDir + "/iris.data");
 		File trainFile = new File(workDir + "/iris_train.data");
 		File testFile = new File(workDir + "/iris_test.data");
@@ -61,7 +61,7 @@ public class IrisExperiment {
 		in.close();
 	}
 
-	public static void main(String args[]) throws FileNotFoundException, IOException, ClassNotFoundException {
+	public static void main(String args[]) throws Exception {
 		if (args.length == 1) {
 			workDir = args[0];
 		}
@@ -75,25 +75,30 @@ public class IrisExperiment {
 		// train
 		Dataset trainDataset = new Dataset();
 		trainDataset.load(trainFile);
-		Dataset testDataset = new Dataset();
-		testDataset.load(testFile);
+		Dataset validateDataSet = new Dataset();
+		validateDataSet.load(testFile);
 		MartLearnerParams params = new MartLearnerParams();
 		params.numCarts = 100;
 		params.learningRate = 1;
 		params.cartParams.maxDepth = 2;
 		params.cartParams.maxNumLeaves = 6;
 		params.cartParams.minNumExamplesAtLeaf = 4;
+		BinomialClassificationProblem problem = new BinomialClassificationProblem();
+
 		MartNewtonRaphsonStepLearner learner = new MartNewtonRaphsonStepLearner();
 		learner.setParams(params);
 		learner.setModelFile(modelFile);
-		MartModel model = learner.learn(trainDataset, testDataset, new BinomialClassificationProblem());
+		learner.setProblem(problem);
+		learner.setTrainingSet(trainDataset);
+		learner.setValidatingSet(validateDataSet);
+		MartModel model = learner.learn();
 		model.toRuleSetModel().dump(rulesFile);
 
 		// test
 		double precision = .0;
 //        Dataset testDataset = new Dataset();
 //        testDataset.load(testFile);
-		Session session = testDataset.sessions.get(0);
+		Session session = validateDataSet.sessions.get(0);
 		for (int i = 0; i < session.instances.size(); i++) {
 			Instance instance = session.instances.get(i);
 			double target = session.targets.get(i);

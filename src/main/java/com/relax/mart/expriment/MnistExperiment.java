@@ -25,7 +25,7 @@ import java.io.IOException;
  */
 public class MnistExperiment {
 
-	public static void main(String args[]) throws FileNotFoundException, IOException, ClassNotFoundException {
+	public static void main(String args[]) throws Exception {
 		File trainFile = new File(args[0]);
 		File testFile = new File(args[1]);
 		File modelFile = new File(args[2]);
@@ -34,18 +34,25 @@ public class MnistExperiment {
 		// train
 		Dataset trainDataset = new Dataset();
 		trainDataset.load(trainFile);
-		Dataset testDataset = new Dataset();
-		testDataset.load(testFile);
+		Dataset validateDataset = new Dataset();
+		validateDataset.load(testFile);
 		MartLearnerParams params = new MartLearnerParams();
 		params.numCarts = 100;
 		params.learningRate = 1;
 		params.cartParams.maxDepth = 3;
 		params.cartParams.maxNumLeaves = 5;
 		params.cartParams.minNumExamplesAtLeaf = 6;
+		params.cartParams.suitableNumExamplesForSplit = 3000;
+		
+		BinomialClassificationProblem problem = new BinomialClassificationProblem();
 		MartNewtonRaphsonStepLearner learner = new MartNewtonRaphsonStepLearner();
 		learner.setParams(params);
 		learner.setModelFile(modelFile);
-		MartModel model = learner.learn(trainDataset, testDataset, new BinomialClassificationProblem());
+		learner.setProblem(problem);
+		learner.setTrainingSet(trainDataset);
+		learner.setValidatingSet(validateDataset);
+//		MartModel model = learner.learn(trainDataset, testDataset, new BipartitePairwiseRankProblem());
+		MartModel model = learner.learn();
 		model.toRuleSetModel().dump(rulesFile);
 	}
 }

@@ -50,8 +50,9 @@ public class MartModel {
 	public double predict(Instance instance) {
 		double score = .0;
 		for (CartModel cart : cartModels) {
-			score += learningRate * cart.predict(instance);
+			score += cart.predict(instance);
 		}
+		score *= learningRate;
 		return score;
 	}
 

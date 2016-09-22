@@ -24,9 +24,9 @@ import com.relax.lib.pcj.DoubleVector;
  */
 public class BinomialClassificationProblem implements Problem {
 
-	double regularizationWeight = 0.0001;
-	double positiveExampleWeight = 1.0;
-	double negativeExampleWeight = 1.0;
+	public double regularizationWeight = 0.0001;
+	public double positiveExampleWeight = 1.0;
+	public double negativeExampleWeight = 1.0;
 
 	@Override
 	public double computeSessionLoss(DoubleVector predicts, Session session) {

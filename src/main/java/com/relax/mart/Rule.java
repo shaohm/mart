@@ -17,6 +17,7 @@ package com.relax.mart;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  *
@@ -40,11 +41,10 @@ public class Rule {
 	}
 
 	public static interface Condition {
-
 		boolean accept(Instance instance);
 	}
 
-	public static class Node implements Condition {
+	public static class Node implements Condition, Comparable<Node> {
 
 		int splitFeature;
 		double splitValue;
@@ -71,12 +71,54 @@ public class Rule {
 			splitValue = Double.parseDouble(slices[2]);
 		}
 
+		@Override
+		public int compareTo(Node o) {
+			int r;
+			r = Integer.compare(this.splitFeature, o.splitFeature);
+			if(r != 0)
+				return r;
+			r = Double.compare(this.splitValue, o.splitValue);
+			if(r != 0)
+				return r;
+			return le ? -1 : 1;
+		}
+
+		@Override
+		public int hashCode() {
+			int hash = 7;
+			hash = 13 * hash + this.splitFeature;
+			hash = 13 * hash + (int) (Double.doubleToLongBits(this.splitValue) ^ (Double.doubleToLongBits(this.splitValue) >>> 32));
+			hash = 13 * hash + (this.le ? 1 : 0);
+			return hash;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (obj == null) {
+				return false;
+			}
+			if (getClass() != obj.getClass()) {
+				return false;
+			}
+			final Node other = (Node) obj;
+			if (this.splitFeature != other.splitFeature) {
+				return false;
+			}
+			if (Double.doubleToLongBits(this.splitValue) != Double.doubleToLongBits(other.splitValue)) {
+				return false;
+			}
+			if (this.le != other.le) {
+				return false;
+			}
+			return true;
+		}
+
 	}
 
-	public static class Path implements Condition {
+	public static class Path implements Condition, Comparable<Path> {
 
 		List<Node> nodes = new ArrayList(4);
-
+		
 		@Override
 		public boolean accept(Instance instance) {
 			for (Node node : nodes) {
@@ -109,5 +151,39 @@ public class Rule {
 				nodes.add(node);
 			}
 		}
+
+		@Override
+		public int compareTo(Path o) {
+			for(int i = 0; i < Math.min(nodes.size(), o.nodes.size()); i++) {
+				int r = nodes.get(i).compareTo(o.nodes.get(i));
+				if(r != 0)
+					return r;
+			}
+			return nodes.size() - o.nodes.size();
+		}
+
+		@Override
+		public int hashCode() {
+			int hash = 3;
+			hash = 47 * hash + Objects.hashCode(this.nodes);
+			return hash;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (obj == null) {
+				return false;
+			}
+			if (getClass() != obj.getClass()) {
+				return false;
+			}
+			final Path other = (Path) obj;
+			if (!Objects.equals(this.nodes, other.nodes)) {
+				return false;
+			}
+			return true;
+		}
+		
+		
 	}
 }

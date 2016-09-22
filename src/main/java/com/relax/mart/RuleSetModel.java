@@ -25,7 +25,9 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Scanner;
+import java.util.TreeMap;
 
 /**
  *
@@ -42,9 +44,27 @@ public class RuleSetModel {
 			if(rule.path.accept(instance))
 				score += rule.predict;
 		}
+		score *= learningRate;
 		return score;
 	}
 
+	public RuleSetModel reduced() {
+		RuleSetModel m = new RuleSetModel();
+		m.learningRate = 1;
+		Map<Rule.Path, List<Rule>> clusters = new TreeMap();
+		for(Map.Entry<Rule.Path, List<Rule>> ent : clusters.entrySet()) {
+			Rule combined = new Rule();
+			combined.path = ent.getKey();
+			combined.predict = .0;
+			for(Rule rule : ent.getValue()) {
+				combined.predict += rule.predict;
+			}
+			combined.predict *= this.learningRate;
+			m.rules.add(combined);
+		}
+		return m;
+	}
+	
 	@Override
 	public String toString() {
 		StringBuilder buf = new StringBuilder();

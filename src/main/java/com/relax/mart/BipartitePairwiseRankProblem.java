@@ -17,6 +17,7 @@ package com.relax.mart;
 
 import com.relax.lib.pcj.DoubleVector;
 import com.relax.lib.pcj.IntVector;
+import com.relax.lib.pcj.Sorter;
 
 /**
  * 只允许整型的target，且target的值最低是0，且绝大多数实例是0.
@@ -94,8 +95,8 @@ public class BipartitePairwiseRankProblem implements Problem {
 		for (int i = 0; i < predictsBak.size(); i++) {
 			indices.append(i);
 		}
-		sortDesc(predictsBak, 0, predictsBak.size(), indices);
-
+		// sortDesc(predictsBak, 0, predictsBak.size(), indices);
+		Sorter.sort(predictsBak.backingArray(), 0, predicts.size(), indices.backingArray(), false);
 		IntVector counts = new IntVector();
 		int from = 0, to = 0;
 		while (from < predictsBak.size()) {

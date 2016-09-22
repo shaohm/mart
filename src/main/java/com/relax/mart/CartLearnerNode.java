@@ -22,13 +22,18 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Future;
 
 /**
  *
  * @author haimin.shao
  */
 public class CartLearnerNode extends CartModelNode {
-
+	
+	
 	public List<Instance> instances;
 	public DoubleVector targets;
 	public int splitLeftCount;
@@ -41,7 +46,7 @@ public class CartLearnerNode extends CartModelNode {
 	 * @param targets
 	 * @param seq
 	 */
-	public CartLearnerNode(List<Instance> instances, DoubleVector targets, int seq, CartLearnerParams params) {
+	public CartLearnerNode(List<Instance> instances, DoubleVector targets, int seq, CartLearnerParams params) throws InterruptedException, ExecutionException {
 		this.instances = instances;
 		this.targets = targets;
 		this.seq = seq;
@@ -87,34 +92,82 @@ public class CartLearnerNode extends CartModelNode {
 		}
 
 		// find the best split
-		class ExampleComparator implements Comparator<Pair<Instance, Double>> {
-
-			int feature;
-
-			public ExampleComparator(int feature) {
-				this.feature = feature;
-			}
-
-			@Override
-			public int compare(Pair<Instance, Double> o1, Pair<Instance, Double> o2) {
-				double v1 = o1.first.findValue(feature);
-				double v2 = o2.first.findValue(feature);
-				return Double.compare(v1, v2);
+		List<SplitSearcher> tasks = new ArrayList();
+		for(int feature : featureSet) {
+			SplitSearcher searcher = new SplitSearcher();
+			searcher.examples = new ArrayList(examples);
+			searcher.feature = feature;
+			searcher.params = params;
+			searcher.tSum = tSum;
+			searcher.tSquaredSum = tSquaredSum;
+			tasks.add(searcher);
+		}
+		List<Future<Split>> results = ForkJoinThreadPool.pool.invokeAll(tasks);
+		
+		Split bestSplit = null;
+		for(Future<Split> future : results) {
+			Split split = future.get();
+			if(bestSplit == null || bestSplit.gain < split.gain) {
+				bestSplit = split;
 			}
 		}
 
-		int bestSplitFeature = -1;
-		double bestSplitValue = .0, bestSplitEndValue = .0;
-		double bestSplitGain = .0;
-		int bestSplitLeftCount = 0;
-		int bestSplitRightCount = 0;
-		double errorTotal = tSquaredSum - tSum * tSum / countAll;
-		for (int feature : featureSet) {
+		this.numInstances = this.instances.size();
+		this.error = tSquaredSum - tSum * tSum / countAll;
+		this.predict = tSum / countAll;
+		this.splitFeature = bestSplit.feature;
+		this.splitValue = (bestSplit.startValue + bestSplit.endValue) / 2;
+		this.splitGain = bestSplit.gain;
+		this.splitLeftCount = bestSplit.leftCount;
+		this.splitRightCount = bestSplit.rightCount;
+	}
+	
+	
+	private static class ExampleComparator implements Comparator<Pair<Instance, Double>> {
+		int feature;
+		public ExampleComparator(int feature) {
+			this.feature = feature;
+		}
+		@Override
+		public int compare(Pair<Instance, Double> o1, Pair<Instance, Double> o2) {
+			double v1 = o1.first.findValue(feature);
+			double v2 = o2.first.findValue(feature);
+			return Double.compare(v1, v2);
+		}
+	}
+
+	private static class Split implements Comparable<Split> {
+		int feature;
+		double startValue = .0, endValue = .0;
+		double gain = .0;
+		int leftCount = 0, rightCount = 0;
+		
+		@Override
+		public int compareTo(Split o) {
+			return Double.compare(this.gain, o.gain);
+		}
+	}
+	
+	private static class SplitSearcher implements  Callable<Split> {
+		List<Pair<Instance, Double>> examples;
+		int feature;
+		CartLearnerParams params;
+		
+		double tSum = .0;
+		double tSquaredSum = .0;
+		
+		@Override
+		public Split call() {
+			int countAll = examples.size();
+			double errorTotal = tSquaredSum - tSum * tSum / countAll;
 			Collections.sort(examples, new ExampleComparator(feature));
 			double tSumLeft = .0, tSumRight = tSum;
 			double tSquaredSumLeft = .0, tSquaredSumRight = tSquaredSum;
 			int countLeft = 0, countRight = countAll;
-
+			
+			Split bestSplit = new Split();
+			bestSplit.feature = this.feature;
+			
 			double prevValue = .0;
 			boolean inBestRegion = false;
 			for (int i = 0; i < countAll; i++) {
@@ -124,18 +177,17 @@ public class CartLearnerNode extends CartModelNode {
 					double errorLeft = tSquaredSumLeft - (countLeft > 0 ? tSumLeft * tSumLeft / countLeft : 0);
 					double errorRight = tSquaredSumRight - (countRight > 0 ? tSumRight * tSumRight / countRight : 0);
 					double gain = errorTotal - errorLeft - errorRight;
-					if (gain > bestSplitGain) {
+					if (gain > bestSplit.gain) {
 						if (countLeft >= params.minNumExamplesAtLeaf && countRight >= params.minNumExamplesAtLeaf) {
-							bestSplitFeature = feature;
-							bestSplitValue = bestSplitEndValue = prevValue;
-							bestSplitGain = gain;
-							bestSplitLeftCount = countLeft;
-							bestSplitRightCount = countRight;
+							bestSplit.startValue = bestSplit.endValue = prevValue;
+							bestSplit.gain = gain;
+							bestSplit.leftCount = countLeft;
+							bestSplit.rightCount = countRight;
 							inBestRegion = true;
 						}
-					} else if (gain < bestSplitGain && inBestRegion) {
+					} else if (gain < bestSplit.gain && inBestRegion) {
 						if (countLeft >= params.minNumExamplesAtLeaf && countRight >= params.minNumExamplesAtLeaf) {
-							bestSplitEndValue = prevValue;
+							bestSplit.endValue = prevValue;
 							inBestRegion = false;
 						}
 					}
@@ -148,21 +200,13 @@ public class CartLearnerNode extends CartModelNode {
 				countRight--;
 				prevValue = currValue;
 			}
+			return bestSplit;
 		}
-
-		this.numInstances = this.instances.size();
-		this.error = errorTotal;
-		this.predict = tSum / countAll;
-		this.splitFeature = bestSplitFeature;
-//		this.splitValue = bestSplitValue;
-//        System.out.println("split start end: " + bestSplitValue + " " + bestSplitEndValue);
-		this.splitValue = (bestSplitValue + bestSplitEndValue) / 2;
-		this.splitGain = bestSplitGain;
-		this.splitLeftCount = bestSplitLeftCount;
-		this.splitRightCount = bestSplitRightCount;
 	}
-
-	public void split(CartLearnerParams params) {
+	
+	
+	
+	public void split(CartLearnerParams params) throws InterruptedException, ExecutionException {
 		if (this.splitFeature < 0) {
 			throw new RuntimeException("split not found");
 		}

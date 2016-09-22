@@ -23,6 +23,7 @@ import com.relax.mart.MartNewtonRaphsonStepLearner;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.Collections;
 
 /**
  *
@@ -32,12 +33,12 @@ public class Main {
 
 	static String workDir = "D:\\SoftwareData\\rhcygwin64\\home\\haimin.shao\\code\\rankboost_code";
 
-	public static void main(String args[]) throws FileNotFoundException, IOException {
+	public static void main(String args[]) throws Exception {
 		File fromFile = new File(workDir + "\\w.dat");
 		File toFile = new File(workDir + "\\v.dat");
 		File to2File = new File(workDir + "\\u.dat");
-		Dataset ds = new Dataset();
-		ds.load(fromFile);
+		Dataset trainDataset = new Dataset();
+		trainDataset.load(fromFile);
 
 		MartLearnerParams params = new MartLearnerParams();
 		params.numCarts = 100;
@@ -46,16 +47,19 @@ public class Main {
 		params.cartParams.maxDepth = 1;
 		params.cartParams.maxNumLeaves = 6;
 		params.cartParams.minNumExamplesAtLeaf = 4;
-
+		BipartitePairwiseRankProblem problem = new BipartitePairwiseRankProblem();
 		MartNewtonRaphsonStepLearner learner = new MartNewtonRaphsonStepLearner();
 		learner.setParams(params);
-		BipartitePairwiseRankProblem problem = new BipartitePairwiseRankProblem();
+		learner.setProblem(problem);
+		learner.setTrainingSet(trainDataset);
+		learner.setValidatingSet(null);
 		problem.readableLossTopN = 1;
-		MartModel model = learner.learn(ds, null, problem);
+		MartModel model = learner.learn();
 		model.dump(toFile);
 //        System.out.println(model.toString());
 		MartModel model2 = new MartModel();
 		model2.load(toFile);
 		model2.dump(to2File);
+//		Collections.sort(null);
 	}
 }

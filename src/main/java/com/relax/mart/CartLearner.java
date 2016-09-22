@@ -19,6 +19,7 @@ import com.relax.lib.pcj.DoubleVector;
 import java.util.Comparator;
 import java.util.List;
 import java.util.PriorityQueue;
+import java.util.concurrent.ExecutionException;
 
 /**
  *
@@ -28,7 +29,7 @@ public class CartLearner {
 
 	private CartLearnerParams params;
 
-	public CartLearnerNode learn(List<Instance> instances, DoubleVector targets, Problem problem) {
+	public CartLearnerNode learn(List<Instance> instances, DoubleVector targets, Problem problem) throws InterruptedException, ExecutionException {
 		CartLearnerNode root = new CartLearnerNode(instances, targets, 1, params);
 		PriorityQueue<CartLearnerNode> leavesToSplit = new PriorityQueue(16, new Comparator<CartLearnerNode>() {
 			@Override
