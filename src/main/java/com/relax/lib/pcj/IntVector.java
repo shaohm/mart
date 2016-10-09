@@ -93,7 +93,17 @@ public class IntVector {
 		Arrays.fill(this.value, this.size, this.size + size, v);
 		this.size += size;
 	}
-
+	
+	public void append(int src[], int from, int end) {
+		int srclen = end - from;
+		if (this.value.length < this.size + srclen) {
+			int[] newValue = new int[(this.size + srclen) * 2];
+			System.arraycopy(this.value, 0, newValue, 0, this.size);
+			this.value = newValue;
+		}
+		System.arraycopy(src, from, this.value, this.size, srclen);
+		this.size += srclen;
+	}
 	public void append(IntVector slice) {
 		if (this.value.length < this.size + slice.size) {
 			int[] newValue = new int[(this.size + slice.size) * 2];

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.relax.mart;
+package com.relax.mart.classify;
 
 import com.relax.lib.pcj.DoubleVector;
 
@@ -22,16 +22,16 @@ import com.relax.lib.pcj.DoubleVector;
  *
  * @author haimin.shao
  */
-public class BinomialClassificationProblem implements Problem {
+public class BinomialClassifyProblem implements ClassifyProblem {
 
 	public double regularizationWeight = 0.0001;
 	public double positiveExampleWeight = 1.0;
 	public double negativeExampleWeight = 1.0;
 
 	@Override
-	public double computeSessionLoss(DoubleVector predicts, Session session) {
+	public double computeSessionLoss(DoubleVector predicts, ClassifyDataset session, int start, int end) {
 		double loss = .0;
-		for (int i = 0; i < session.targets.size(); i++) {
+		for (int i = start; i < end; i++) {
 			double t = session.targets.get(i);
 			double p = predicts.get(i);
 			double w = (t > 0) ? positiveExampleWeight : negativeExampleWeight;
@@ -42,13 +42,9 @@ public class BinomialClassificationProblem implements Problem {
 	}
 
 	@Override
-	public void computeSessionLossGradients(DoubleVector predicts, DoubleVector gradient, DoubleVector secondGradient, Session session) {
-		gradient.clear(0);
-		gradient.append(0.0, session.targets.size());
-		secondGradient.clear(0);
-		secondGradient.append(0.0, session.targets.size());
-
-		for (int i = 0; i < session.targets.size(); i++) {
+	public void computeSessionLossGradients(DoubleVector predicts, DoubleVector gradient, 
+			DoubleVector secondGradient, ClassifyDataset session, int start, int end) {
+		for (int i = start; i < end; i++) {
 			double t = session.targets.get(i);
 			double p = predicts.get(i);
 			double w = (t > 0) ? positiveExampleWeight : negativeExampleWeight;
@@ -58,13 +54,11 @@ public class BinomialClassificationProblem implements Problem {
 		}
 	}
 
-	/**
-	 * 简单计算精度吧。
-	 */
+
 	@Override
-	public double computeReadableSessionLoss(DoubleVector predicts, Session session) {
+	public double computeReadableSessionLoss(DoubleVector predicts, ClassifyDataset session, int start, int end) {
 		double loss = .0;
-		for (int i = 0; i < session.targets.size(); i++) {
+		for (int i = start; i < end; i++) {
 			double t = session.targets.get(i);
 			double p = predicts.get(i);
 			if (p == 0) {
@@ -74,7 +68,6 @@ public class BinomialClassificationProblem implements Problem {
 				loss += 1;
 			}
 		}
-		loss /= session.targets.size();
 		return loss;
 	}
 

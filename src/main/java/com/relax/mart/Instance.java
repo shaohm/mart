@@ -15,6 +15,7 @@
  */
 package com.relax.mart;
 
+import com.relax.lib.Pair;
 import com.relax.lib.pcj.DoubleVector;
 import com.relax.lib.pcj.IntVector;
 import java.util.ArrayList;
@@ -26,20 +27,18 @@ import java.util.List;
  */
 public class Instance {
 
-	Session sesstion;
-	int offset; // the offset of this instance in session
-	IntVector indices;
-	DoubleVector values;
-	List<Pair<String, String>> attributes;
+	public int offset; // the offset of this instance in session
+	public IntVector indices;
+	public DoubleVector values;
+	public List<Pair<String, String>> attributes;
 
 	public static void main(String[] args) {
 		String line = " 100:0.1   101:0.3  ###type:hotel   index:1 ";
-		Instance instance = new Instance(null, 0, line);
+		Instance instance = new Instance(0, line);
 		System.out.println(instance);
 	}
 
-	public Instance(Session session, int offset, String line) {
-		this.sesstion = session;
+	public Instance(int offset, String line) {
 		this.offset = offset;
 		int p = line.indexOf('#');
 		p = p < 0 ? line.length() : p;

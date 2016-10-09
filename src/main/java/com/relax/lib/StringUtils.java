@@ -13,23 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.relax.mart;
+package com.relax.lib;
 
 /**
  *
  * @author haimin.shao
  */
-public class Pair<K, V> {
-
-	public K first;
-	public V second;
-
-	public Pair(K first, V second) {
-		this.first = first;
-		this.second = second;
+public class StringUtils {
+	public static int indexOf(String delimeters, String line) {
+		return indexOf(delimeters, line, 0, line.length());
 	}
-	
-	public String toString() {
-		return first.toString() + ":" + second.toString();
+
+	public static int indexOf(String delimeters, String line, int from) {
+		return indexOf(delimeters, line, from, line.length());
+	}
+
+	public static int indexOf(String delimeters, String line, int from, int to) {
+		for (int i = from; i < to; i++) {
+			if (delimeters.indexOf(line.charAt(i)) >= 0) {
+				return i;
+			}
+		}
+		return -1;
 	}
 }

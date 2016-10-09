@@ -13,16 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.relax.mart;
+package com.relax.lib;
 
-import java.io.File;
-import java.io.IOException;
+import java.util.concurrent.ForkJoinPool;
 
 /**
  *
  * @author haimin.shao
  */
-public interface Dataset {
-	void load(File dataFile) throws IOException;
-	void dump(File dataFile) throws IOException;
+public class ForkJoinThreadPool {
+	public static final ForkJoinPool pool = new ForkJoinPool();
 }

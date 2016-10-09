@@ -13,16 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.relax.mart;
-
-import java.io.File;
-import java.io.IOException;
+package com.relax.lib;
 
 /**
  *
  * @author haimin.shao
  */
-public interface Dataset {
-	void load(File dataFile) throws IOException;
-	void dump(File dataFile) throws IOException;
+public class Pair<K, V> {
+
+	public K first;
+	public V second;
+
+	public Pair(K first, V second) {
+		this.first = first;
+		this.second = second;
+	}
+	
+	public String toString() {
+		return first.toString() + ":" + second.toString();
+	}
 }

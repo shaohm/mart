@@ -35,7 +35,6 @@ import java.util.TreeMap;
  */
 public class RuleSetModel {
 
-	public double learningRate = 0.2;
 	public List<Rule> rules = new ArrayList();
 
 	public double predict(Instance instance) {
@@ -44,13 +43,11 @@ public class RuleSetModel {
 			if(rule.path.accept(instance))
 				score += rule.predict;
 		}
-		score *= learningRate;
 		return score;
 	}
 
 	public RuleSetModel reduced() {
 		RuleSetModel m = new RuleSetModel();
-		m.learningRate = 1;
 		Map<Rule.Path, List<Rule>> clusters = new TreeMap();
 		for(Map.Entry<Rule.Path, List<Rule>> ent : clusters.entrySet()) {
 			Rule combined = new Rule();
@@ -59,7 +56,6 @@ public class RuleSetModel {
 			for(Rule rule : ent.getValue()) {
 				combined.predict += rule.predict;
 			}
-			combined.predict *= this.learningRate;
 			m.rules.add(combined);
 		}
 		return m;
@@ -68,7 +64,6 @@ public class RuleSetModel {
 	@Override
 	public String toString() {
 		StringBuilder buf = new StringBuilder();
-		buf.append(this.learningRate).append('\n');
 		for (int m = 1; m <= this.rules.size(); m++) {
 			buf.append(rules.get(m - 1).toString()).append('\n');
 		}
@@ -77,8 +72,6 @@ public class RuleSetModel {
 
 	public void fromString(String modelStr) {
 		try (Scanner in = new Scanner(modelStr)) {
-			if(in.hasNextLine())
-				this.learningRate = Double.parseDouble(in.nextLine());
 			while (in.hasNextLine()) {
 				String ruleStr = in.nextLine();
 				Rule rule = new Rule();
@@ -90,7 +83,6 @@ public class RuleSetModel {
 
 	public void dump(File rulesFile) throws IOException {
 		try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(rulesFile), "utf-8"))) {
-			writer.write(String.format("%g\n", this.learningRate));
 			for (Rule rule : rules) {
 				String ruleStr = rule.toString();
 				writer.write(ruleStr, 0, ruleStr.length());

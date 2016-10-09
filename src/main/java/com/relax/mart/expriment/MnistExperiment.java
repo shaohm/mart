@@ -15,10 +15,9 @@
  */
 package com.relax.mart.expriment;
 
+import com.relax.mart.classify.*;
 import com.relax.mart.*;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.*;
 /**
  *
  * @author haimin.shao
@@ -32,9 +31,9 @@ public class MnistExperiment {
 		File rulesFile = new File(args[3]);
 
 		// train
-		Dataset trainDataset = new Dataset();
+		ClassifyDataset trainDataset = new ClassifyDataset();
 		trainDataset.load(trainFile);
-		Dataset validateDataset = new Dataset();
+		ClassifyDataset validateDataset = new ClassifyDataset();
 		validateDataset.load(testFile);
 		MartLearnerParams params = new MartLearnerParams();
 		params.numCarts = 100;
@@ -44,8 +43,8 @@ public class MnistExperiment {
 		params.cartParams.minNumExamplesAtLeaf = 6;
 		params.cartParams.suitableNumExamplesForSplit = 3000;
 		
-		BinomialClassificationProblem problem = new BinomialClassificationProblem();
-		MartNewtonRaphsonStepLearner learner = new MartNewtonRaphsonStepLearner();
+		BinomialClassifyProblem problem = new BinomialClassifyProblem();
+		BinomialClassifierLearner learner = new BinomialClassifierLearner();
 		learner.setParams(params);
 		learner.setModelFile(modelFile);
 		learner.setProblem(problem);

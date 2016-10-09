@@ -13,8 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.relax.mart;
+package com.relax.mart.rank;
 
+import com.relax.mart.rank.RankProblem;
 import com.relax.lib.pcj.DoubleVector;
 import com.relax.lib.pcj.IntVector;
 import com.relax.lib.pcj.Sorter;
@@ -24,7 +25,7 @@ import com.relax.lib.pcj.Sorter;
  *
  * @author haimin.shao
  */
-public class BipartitePairwiseRankProblem implements Problem {
+public class BipartitePairwiseRankProblem implements RankProblem {
 
 	public double regularizationWeight = 0.0001;
 	public int readableLossTopN = 2;

@@ -13,15 +13,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.relax.mart;
+package com.relax.mart.rank;
 
 import com.relax.lib.pcj.DoubleVector;
 import com.relax.lib.pcj.IntVector;
+import com.relax.mart.CartLearner;
+import com.relax.mart.CartLearnerNode;
+import com.relax.mart.CartModel;
+import com.relax.mart.CartModelNode;
+import com.relax.lib.ForkJoinThreadPool;
+import com.relax.mart.Instance;
+import com.relax.mart.Learner;
+import com.relax.mart.MartLearnerParams;
+import com.relax.mart.MartModel;
+import com.relax.mart.RegressDataset;
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -32,28 +43,17 @@ import java.util.concurrent.Future;
  *
  * @author haimin.shao
  */
-public class MartNewtonRaphsonStepLearner {
+public class RankingLearner extends Learner<MartModel>{
 
 	private MartLearnerParams params;
 	private File modelFile = null;
-	private Dataset trainingSet;
-	private Dataset validatingSet;
-	private Problem problem;
-	
-	public MartModel learn() throws InterruptedException, ExecutionException {
-		return this.resume(null);
-	}
+	private RankDataset trainingSet;
+	private RankDataset validatingSet;
+	private RankProblem problem;
 	
 	public MartModel resume(MartModel mart) throws InterruptedException, ExecutionException {
-		if (mart == null) {
-			mart = new MartModel(params.learningRate);
-		} else if(mart.learningRate == 0 && mart.cartModels.isEmpty()){
-			mart.learningRate = params.learningRate;
-		} else {
-			if (mart.learningRate != params.learningRate) {
-				throw new IllegalArgumentException("Two different learning rate settings.");
-			}
-		}
+		if (mart == null) 
+			mart = new MartModel();
 
 		CartLearner weakLearner = new CartLearner();
 		weakLearner.setParams(params.cartParams);
@@ -95,8 +95,10 @@ public class MartNewtonRaphsonStepLearner {
 			
 			// fit gradients
 			startTime = System.currentTimeMillis();
-			CartLearnerNode root = weakLearner.learn(instances, gradients, problem);
-			if (root.left == null) {
+			weakLearner.setTrainingSet(new RegressDataset(instances, gradients));
+			CartModel cart = weakLearner.learn();
+			
+			if (cart.root.left == null) {
 				System.out.println("gradients fitting: no obvious gain anymore.");
 				break;
 			}
@@ -105,7 +107,6 @@ public class MartNewtonRaphsonStepLearner {
 			
 			// search for best step size
 			startTime = System.currentTimeMillis();
-			CartModel cart = new CartModel(root);
 			this.lineSearchAll(cart, predictsList, gradientList, secondGradientList, mart);
 			endTime = System.currentTimeMillis();
 //			System.out.printf("line search: %d\n", endTime - startTime);
@@ -190,7 +191,6 @@ public class MartNewtonRaphsonStepLearner {
 		List<DoubleVector> secondGradientList;
 		MartModel mart;
 		
-		
 		//output
 		CartLearnerNode learnerNode;
 		List<DoubleVector> predictsList;
@@ -199,21 +199,25 @@ public class MartNewtonRaphsonStepLearner {
 		public void run() {
 			// locate instances
 			Map<Integer, IntVector> sessionMap = new TreeMap();
-			for (Instance instance : learnerNode.instances) {
-				if (sessionMap.containsKey(instance.sesstion.offset)) {
-					sessionMap.get(instance.sesstion.offset).append(instance.offset);
+			Iterator<Instance> iter = learnerNode.instances.iterator();
+			while(iter.hasNext()) {
+				RankInstance instance = (RankInstance)iter.next();
+				if (sessionMap.containsKey(instance.session.offset)) {
+					sessionMap.get(instance.session.offset).append(instance.offset);
 				} else {
 					IntVector selected = new IntVector(4);
 					selected.append(instance.offset);
-					sessionMap.put(instance.sesstion.offset, selected);
+					sessionMap.put(instance.session.offset, selected);
 				}
 			}
 
 			learnerNode.predict = lineSearch(sessionMap, gradientList, secondGradientList);
 			// update predicts
-			for (Instance instance : learnerNode.instances) {
-				DoubleVector predicts = predictsList.get(instance.sesstion.offset);
-				double np = predicts.get(instance.offset) + mart.learningRate * learnerNode.predict;
+			iter = learnerNode.instances.iterator();
+			while(iter.hasNext()) {
+				RankInstance instance = (RankInstance)iter.next();
+				DoubleVector predicts = predictsList.get(instance.session.offset);
+				double np = predicts.get(instance.offset) + params.learningRate * learnerNode.predict;
 				predicts.set(np, instance.offset);
 			}
 		}
@@ -332,7 +336,7 @@ public class MartNewtonRaphsonStepLearner {
 		@Override
 		public void run() {
 			for(int i = 0; i < sessions.size(); i++) {
-				List<Instance> instances = sessions.get(i).instances;
+				List<RankInstance> instances = sessions.get(i).instances;
 				DoubleVector predicts = predictsList.get(i);
 				for(int j = 0; j < instances.size(); j++) {
 					double p = mart.predict(instances.get(j));
@@ -400,21 +404,21 @@ public class MartNewtonRaphsonStepLearner {
 	/**
 	 * @param trainingSet the trainingSet to set
 	 */
-	public void setTrainingSet(Dataset trainingSet) {
+	public void setTrainingSet(RankDataset trainingSet) {
 		this.trainingSet = trainingSet;
 	}
 
 	/**
 	 * @param validatingSet the validatingSet to set
 	 */
-	public void setValidatingSet(Dataset validatingSet) {
+	public void setValidatingSet(RankDataset validatingSet) {
 		this.validatingSet = validatingSet;
 	}
 
 	/**
 	 * @param problem the problem to set
 	 */
-	public void setProblem(Problem problem) {
+	public void setProblem(RankProblem problem) {
 		this.problem = problem;
 	}
 	

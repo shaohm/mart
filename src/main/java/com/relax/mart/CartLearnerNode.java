@@ -15,6 +15,8 @@
  */
 package com.relax.mart;
 
+import com.relax.lib.Pair;
+import com.relax.lib.ForkJoinThreadPool;
 import com.relax.lib.pcj.DoubleVector;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,7 +26,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
 
 /**

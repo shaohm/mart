@@ -15,14 +15,14 @@
  */
 package com.relax.mart;
 
-import java.io.File;
-import java.io.IOException;
-
 /**
  *
  * @author haimin.shao
+ * @param <T>
  */
-public interface Dataset {
-	void load(File dataFile) throws IOException;
-	void dump(File dataFile) throws IOException;
+public abstract class Learner<T extends Model> {
+	public T learn() throws Exception {
+		return this.resume(null);
+	}
+	public abstract T resume(T model) throws Exception ;
 }

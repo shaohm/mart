@@ -15,11 +15,11 @@
  */
 package com.relax.mart.expriment;
 
-import com.relax.mart.Dataset;
-import com.relax.mart.BipartitePairwiseRankProblem;
+import com.relax.mart.rank.RankDataset;
+import com.relax.mart.rank.BipartitePairwiseRankProblem;
 import com.relax.mart.MartLearnerParams;
 import com.relax.mart.MartModel;
-import com.relax.mart.MartNewtonRaphsonStepLearner;
+import com.relax.mart.rank.RankingLearner;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -37,7 +37,7 @@ public class Main {
 		File fromFile = new File(workDir + "\\w.dat");
 		File toFile = new File(workDir + "\\v.dat");
 		File to2File = new File(workDir + "\\u.dat");
-		Dataset trainDataset = new Dataset();
+		RankDataset trainDataset = new RankDataset();
 		trainDataset.load(fromFile);
 
 		MartLearnerParams params = new MartLearnerParams();
@@ -48,7 +48,7 @@ public class Main {
 		params.cartParams.maxNumLeaves = 6;
 		params.cartParams.minNumExamplesAtLeaf = 4;
 		BipartitePairwiseRankProblem problem = new BipartitePairwiseRankProblem();
-		MartNewtonRaphsonStepLearner learner = new MartNewtonRaphsonStepLearner();
+		RankingLearner learner = new RankingLearner();
 		learner.setParams(params);
 		learner.setProblem(problem);
 		learner.setTrainingSet(trainDataset);

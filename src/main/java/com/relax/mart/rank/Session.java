@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.relax.mart;
+package com.relax.mart.rank;
 
 import com.relax.lib.pcj.DoubleVector;
 import com.relax.lib.pcj.Sorter;
@@ -29,21 +29,17 @@ public class Session {
 
 	public int offset;
 	public String id;
-	public List<Instance> instances;
+	public List<RankInstance> instances;
 	public DoubleVector targets;
-//	public DoubleVector predicts;
-//	public DoubleVector gradient;
-//	public DoubleVector secondGradient;
 
 	public Session(int offset, String id) {
 		this.offset = offset;
 		this.id = id;
-		this.instances = new ArrayList<Instance>();
+		this.instances = new ArrayList();
 		this.targets = new DoubleVector();
-//		this.predicts = new DoubleVector();
 	}
 
-	public void addExample(Instance instance, double target) {
+	public void addExample(RankInstance instance, double target) {
 		this.instances.add(instance);
 		this.targets.append(target);
 	}

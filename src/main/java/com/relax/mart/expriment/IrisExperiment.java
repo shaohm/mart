@@ -15,12 +15,11 @@
  */
 package com.relax.mart.expriment;
 
+
+import com.relax.mart.classify.*;
 import com.relax.mart.*;
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.UnsupportedEncodingException;
 import java.util.Scanner;
 
 /**
@@ -73,9 +72,9 @@ public class IrisExperiment {
 		File rulesFile = new File(workDir + "/iris_train.rules");
 
 		// train
-		Dataset trainDataset = new Dataset();
+		ClassifyDataset trainDataset = new ClassifyDataset();
 		trainDataset.load(trainFile);
-		Dataset validateDataSet = new Dataset();
+		ClassifyDataset validateDataSet = new ClassifyDataset();
 		validateDataSet.load(testFile);
 		MartLearnerParams params = new MartLearnerParams();
 		params.numCarts = 100;
@@ -83,9 +82,9 @@ public class IrisExperiment {
 		params.cartParams.maxDepth = 2;
 		params.cartParams.maxNumLeaves = 6;
 		params.cartParams.minNumExamplesAtLeaf = 4;
-		BinomialClassificationProblem problem = new BinomialClassificationProblem();
+		BinomialClassifyProblem problem = new BinomialClassifyProblem();
 
-		MartNewtonRaphsonStepLearner learner = new MartNewtonRaphsonStepLearner();
+		BinomialClassifierLearner learner = new BinomialClassifierLearner();
 		learner.setParams(params);
 		learner.setModelFile(modelFile);
 		learner.setProblem(problem);
@@ -98,10 +97,10 @@ public class IrisExperiment {
 		double precision = .0;
 //        Dataset testDataset = new Dataset();
 //        testDataset.load(testFile);
-		Session session = validateDataSet.sessions.get(0);
-		for (int i = 0; i < session.instances.size(); i++) {
-			Instance instance = session.instances.get(i);
-			double target = session.targets.get(i);
+		
+		for (int i = 0; i < validateDataSet.instances.size(); i++) {
+			Instance instance = validateDataSet.instances.get(i);
+			double target = validateDataSet.targets.get(i);
 			double p = model.predict(instance);
 			if (p > 0 && target > 0) {
 				precision += 1.0;
@@ -111,7 +110,7 @@ public class IrisExperiment {
 				System.out.println(target + " " + instance);
 			}
 		}
-		precision /= session.instances.size();
+		precision /= validateDataSet.instances.size();
 		System.out.println(precision);
 	}
 }

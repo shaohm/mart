@@ -33,33 +33,21 @@ import java.util.Scanner;
  *
  * @author haimin.shao
  */
-public class MartModel {
+public class MartModel extends Model{
 
-	public double learningRate;
-	public List<CartModel> cartModels;
-
-	public MartModel() {
-		this(.0);
-	}
-
-	public MartModel(double learningRate) {
-		this.learningRate = learningRate;
-		this.cartModels = new ArrayList();
-	}
+	public List<CartModel> cartModels = new ArrayList();
 
 	public double predict(Instance instance) {
 		double score = .0;
 		for (CartModel cart : cartModels) {
 			score += cart.predict(instance);
 		}
-		score *= learningRate;
 		return score;
 	}
 
 	@Override
 	public String toString() {
 		StringBuilder buf = new StringBuilder();
-		buf.append(this.learningRate).append('\n').append('\n');
 		for (int m = 1; m <= this.cartModels.size(); m++) {
 			buf.append("m=").append(m).append('\n');
 			buf.append(cartModels.get(m - 1).toString()).append('\n');
@@ -68,13 +56,11 @@ public class MartModel {
 	}
 
 	public void fromString(String modelStr) {
-		this.learningRate = .0;
 		this.cartModels.clear();
 		try (Scanner in = new Scanner(modelStr)) {
 			in.useDelimiter("\n\n");
-			if(! in.hasNextDouble())
+			if(! in.hasNext())
 				return;
-			this.learningRate = in.nextDouble();
 			while (in.hasNext()) {
 				String cartStr = in.next();
 				int i = cartStr.indexOf('\n');
@@ -85,32 +71,8 @@ public class MartModel {
 		}
 	}
 
-	public void load(File modelFile) throws UnsupportedEncodingException, FileNotFoundException, IOException {
-		StringBuilder buf = new StringBuilder();
-		try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(modelFile), "utf-8"))) {
-			while (true) {
-				int c = reader.read();
-				if (c > 0) {
-					buf.append((char) c);
-				} else {
-					break;
-				}
-			}
-		}
-		String modelStr = buf.toString();
-		this.fromString(modelStr);
-	}
-
-	public void dump(File modelFile) throws UnsupportedEncodingException, FileNotFoundException, IOException {
-		try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(modelFile), "utf-8"))) {
-			String modelStr = this.toString();
-			writer.write(modelStr, 0, modelStr.length());
-		}
-	}
-
 	public RuleSetModel toRuleSetModel() {
 		RuleSetModel ruleSetModel = new RuleSetModel();
-		ruleSetModel.learningRate = this.learningRate;
 		for (CartModel cart : this.cartModels) {
 			for (CartModelNode node : cart.leaves) {
 				ruleSetModel.rules.add(node.toRule());
@@ -119,4 +81,50 @@ public class MartModel {
 		return ruleSetModel;
 	}
 
+	public static void dumpMarts(MartModel[] marts, File modelFile) throws UnsupportedEncodingException, FileNotFoundException, IOException {
+		try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(modelFile), "utf-8"))) {
+			for(int k = 0; k < marts.length; k++) {
+				MartModel mart = marts[k];
+				String headerStr = String.format("t=%d", k);
+				String modelStr = mart.toString();
+				writer.write(headerStr, 0, headerStr.length());
+				writer.write(modelStr, 0, modelStr.length());
+			}
+		}
+	}
+	
+	public MartModel[] loadMarts(File modelFile) throws UnsupportedEncodingException, FileNotFoundException, IOException {
+		List<MartModel> marts = new ArrayList();
+		StringBuilder buf = new StringBuilder();
+		try (BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(modelFile), "utf-8"))) {
+			String line = reader.readLine();
+			do {
+				if(line == null || line.startsWith("t=")) {
+					if(buf.length() > 0) {
+						MartModel mart = new MartModel();
+						mart.fromString(buf.toString());
+						marts.add(mart);
+						buf.setLength(0);
+					}
+					if(line == null) {
+						break;
+					} else {
+						if(! line.equals(String.format("t=%d", marts.size())))
+							throw new IllegalArgumentException("Bad target line: " + line);
+						line = reader.readLine();
+						continue;
+					} 
+				} 
+				
+				buf.append(line).append('\n');
+				line = reader.readLine();
+			} while(true);
+		}
+		return marts.toArray(new MartModel[marts.size()]);
+	}
+
+	@Override
+	public double predict(Instance instance, int targetNo) {
+		return this.predict(instance);
+	}
 }

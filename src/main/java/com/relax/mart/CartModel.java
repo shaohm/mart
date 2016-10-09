@@ -27,10 +27,10 @@ import java.util.TreeMap;
  *
  * @author haimin.shao
  */
-public class CartModel {
+public class CartModel extends Model {
 
-	CartModelNode root;
-	List<CartModelNode> leaves;
+	public CartModelNode root;
+	public List<CartModelNode> leaves;
 
 	public CartModel() {
 		this(null);
@@ -156,4 +156,8 @@ public class CartModel {
 		this.root.print(writer);
 	}
 
+	@Override
+	public double predict(Instance instance, int targetNo) {
+		return this.predict(instance);
+	}
 }

@@ -25,11 +25,23 @@ import java.util.concurrent.ExecutionException;
  *
  * @author haimin.shao
  */
-public class CartLearner {
+public class CartLearner extends Learner<CartModel>{
 
 	private CartLearnerParams params;
+	private RegressDataset trainingSet;
 
-	public CartLearnerNode learn(List<Instance> instances, DoubleVector targets, Problem problem) throws InterruptedException, ExecutionException {
+	public RegressDataset getTrainingSet() {
+		return trainingSet;
+	}
+
+	public void setTrainingSet(RegressDataset trainingSet) {
+		this.trainingSet = trainingSet;
+	}
+
+	@Override
+	public CartModel learn() throws InterruptedException, ExecutionException {
+		List<Instance> instances = trainingSet.instances;
+		DoubleVector targets = trainingSet.targets;
 		CartLearnerNode root = new CartLearnerNode(instances, targets, 1, params);
 		PriorityQueue<CartLearnerNode> leavesToSplit = new PriorityQueue(16, new Comparator<CartLearnerNode>() {
 			@Override
@@ -64,7 +76,7 @@ public class CartLearner {
 //				System.out.println("J:" + node.error + " " + node.splitGain + " " + params.minRatioSplitGain);
 			}
 		}
-		return root;
+		return new CartModel(root);
 	}
 
 	/**
@@ -79,5 +91,10 @@ public class CartLearner {
 	 */
 	public void setParams(CartLearnerParams params) {
 		this.params = params;
+	}
+
+	@Override
+	public CartModel resume(CartModel model) throws Exception {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 }
